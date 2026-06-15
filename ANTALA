@@ -1,0 +1,41 @@
+import streamlit as st
+import pandas as pd
+from datetime import datetime
+
+st.set_page_config(page_title="معرض أنطاليا", layout="wide")
+
+# تهيئة البيانات
+if 'products' not in st.session_state:
+    st.session_state.products = pd.DataFrame(columns=['الكود', 'الاسم', 'الفئة', 'الكمية', 'السعر'])
+if 'sales' not in st.session_state:
+    st.session_state.sales = pd.DataFrame(columns=['العميل', 'المنتج', 'الكمية', 'الإجمالي', 'التاريخ'])
+
+st.title("📊 معرض أنطاليا للسيراميك والبورسلين")
+
+menu = st.sidebar.selectbox("القائمة", ["إدارة المخزن", "تسجيل المبيعات", "التقارير"])
+
+if menu == "إدارة المخزن":
+    st.header("📦 إدارة المخزن")
+    with st.form("add_prod"):
+        code = st.text_input("كود المنتج")
+        name = st.text_input("اسم المنتج")
+        qty = st.number_input("الكمية", min_value=0)
+        price = st.number_input("السعر", min_value=0.0)
+        if st.form_submit_button("إضافة"):
+            new_data = pd.DataFrame([[code, name, "سيراميك", qty, price]], columns=st.session_state.products.columns)
+            st.session_state.products = pd.concat([st.session_state.products, new_data], ignore_index=True)
+            st.success("تم الحفظ!")
+    st.dataframe(st.session_state.products)
+
+elif menu == "تسجيل المبيعات":
+    st.header("💰 المبيعات")
+    with st.form("sale_form"):
+        client = st.text_input("اسم العميل")
+        product = st.selectbox("المنتج", st.session_state.products['الاسم'] if not st.session_state.products.empty else [])
+        qty = st.number_input("الكمية المباعة", min_value=1)
+        if st.form_submit_button("إتمام البيع"):
+            st.success(f"تم بيع {qty} من {product} للعميل {client}")
+
+elif menu == "التقارير":
+    st.header("📊 التقارير والإحصائيات")
+    st.write("هنا ستظهر إحصائيات معرض أنطاليا.")
